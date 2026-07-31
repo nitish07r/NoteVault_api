@@ -11,3 +11,12 @@ SessionLocal=sessionmaker(autocommit=False,autoflush=False,bind=engine,expire_on
 # refresh() asks the database for the latest values and fills db_note again,
 # so we can return it with all its data instead of {}.
 #or use db.refresh(db_note) 
+
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+
+    finally:
+        db.close()
