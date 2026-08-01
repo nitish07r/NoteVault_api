@@ -17,10 +17,11 @@ import database_models
 # JWT Configuration
 # ==================================================
 
-SECRET_KEY = "kung-fu-panda"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+from config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+)
 
 # ==================================================
 # Password Hashing

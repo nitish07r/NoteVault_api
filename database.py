@@ -1,10 +1,10 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
-password="postgres123"
+from config import DATABASE_URL
 
-db_url=f"postgresql://postgres:{password}@localhost:5432/notes"
-engine=create_engine(db_url)
+engine=create_engine(DATABASE_URL)
+
 SessionLocal=sessionmaker(autocommit=False,autoflush=False,bind=engine,expire_on_commit=True)
 # After commit(), SQLAlchemy "forgets" the values inside db_note
 # (this is called expire_on_commit)(it is TRUE by default)
