@@ -181,7 +181,7 @@
 
 from datetime import timedelta
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
@@ -484,13 +484,15 @@ def create_note(
 #notes with search and priority filter, if both are provided then both filters will be applied, if only one is provided then only that filter will be applied, if none is provided then all notes of the user will be returned
 @app.get(
     "/notes",
-    response_model=list[pydantic_models.NoteResponse],
+    response_model=pydantic_models.PaginatedNotes,
 )
 def get_my_notes(
     search: str | None = None,
     priority: int | None = None,
     db: Session = Depends(database.get_db),
     sort: str | None = None,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     current_user: database_models.User = Depends(auth.get_current_user),
 ):
 
@@ -538,9 +540,21 @@ def get_my_notes(
         else:
             query = query.order_by(column.asc())
 
-    notes = query.all()
+    total = query.count()
+    
+    notes = (
+        query
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
 
-    return notes
+    return {
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "items": notes,
+    }
 
 @app.get(
     "/notes/{note_id}",
@@ -715,13 +729,15 @@ def get_notes_of_user(
 #with search and priority filter, if both are provided then both filters will be applied, if only one is provided then only that filter will be applied, if none is provided then all notes of the user will be returned
 @app.get(
     "/admin/notes",
-    response_model=list[pydantic_models.NoteResponse],
+    response_model=pydantic_models.PaginatedNotes,
 )
 def get_all_notes(
     search: str | None = None,
     priority: int | None = None,
     sort: str | None = None,
     db: Session = Depends(database.get_db),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     current_admin: database_models.User = Depends(auth.get_current_admin),
     
 ):
@@ -767,9 +783,20 @@ def get_all_notes(
         else:
             query = query.order_by(column.asc())
 
-    notes = query.all()
+    total = query.count()
+    notes = (
+        query
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
 
-    return notes
+    return {
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "items": notes,
+    }
 
 
 @app.delete("/admin/notes/{note_id}")
