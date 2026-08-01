@@ -1,12 +1,3 @@
-# from pydantic import BaseModel
-
-# class Note(BaseModel):
-#     name: str
-#     description: str
-#     created_by:str
-#     priority: int
-
-
 from datetime import datetime
 from typing import Optional
 
