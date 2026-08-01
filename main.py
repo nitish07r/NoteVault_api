@@ -131,7 +131,7 @@ init_db()
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to NoteVault API",
+        "message": "Welcome to NoteVault API,go to /docs for API documentation",
         "version": "1.0.0",
         "docs": "/docs",
     }
