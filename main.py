@@ -127,7 +127,14 @@ def init_db():
 
 init_db()
 
-
+#root end point welcome message
+@app.get("/")
+def root():
+    return {
+        "message": "Welcome to NoteVault API",
+        "version": "1.0.0",
+        "docs": "/docs",
+    }
 # ==================================================
 # Authentication Endpoints
 # In larger projects these endpoints are usually moved
