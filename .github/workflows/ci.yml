@@ -60,3 +60,6 @@ jobs:
 
       - name: Run tests
         run: pytest --cov
+
+      - name: Build Docker image
+        run: docker build -t notevault-api .
