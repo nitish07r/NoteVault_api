@@ -4,6 +4,10 @@ from fastapi import FastAPI, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+import time
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
+
 import auth
 import database
 import database_models
@@ -13,6 +17,29 @@ import pydantic_models
 # ==================================================
 # Create Tables
 # ==================================================
+
+# Wait for the database to be ready before creating tables for the first time. This is especially useful in containerized environments where the database might take a few seconds to start up.
+def wait_for_db(max_retries=10, delay=2):
+    print("Waiting for database...")
+
+    for attempt in range(max_retries):
+        try:
+            with database.engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+
+            print("Database is ready!")
+            return
+
+        except OperationalError:
+            print(
+                f"Database not ready (attempt {attempt + 1}/{max_retries}), "
+                f"retrying in {delay} seconds..."
+            )
+            time.sleep(delay)
+
+    raise RuntimeError("Could not connect to the database.")
+            
+wait_for_db()
 
 database_models.Base.metadata.create_all(bind=database.engine)
 
@@ -27,6 +54,7 @@ app = FastAPI()
 # ==================================================
 # Database Initialization
 # ==================================================
+
 
 def init_db():
 
