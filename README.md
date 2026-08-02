@@ -2,7 +2,42 @@
 
 A production-ready Notes Management REST API built with **FastAPI**, **PostgreSQL**, and **SQLAlchemy**, featuring **JWT Authentication**, **Role-Based Access Control (RBAC)**, **Docker**, **GitHub Actions CI**, and **Railway Deployment**.
 
-🚀 **Live API Docs:** https://notevaultapi-production-918d.up.railway.app/docs
+---
+
+## 🚀 Try the Live API
+
+### 📖 Interactive Swagger UI
+
+https://notevaultapi-production-918d.up.railway.app/docs
+
+### 🔑 Test Credentials
+
+#### 👑 Admin
+
+| Field | Value |
+|------|-------|
+| **Email** | `admin@gmail.com` |
+| **Password** | `Admin@123` |
+
+#### 👤 User
+
+| Field | Value |
+|------|-------|
+| **Email** | `nitish@gmail.com` |
+| **Password** | `Nitish@123` |
+
+### ⚡ Quick Start
+
+1. Open the **Swagger UI**.
+2. Click **Authorize**.
+3. Enter:
+   - **username** → Use the email above.
+   - **password** → Use the corresponding password.
+4. Leave **client_id** and **client_secret** empty.
+5. Click **Authorize**.
+6. Explore the protected API endpoints.
+
+> **Note:** Swagger labels the field as **username**, but this API authenticates users using their **email address**.
 
 ---
 
@@ -105,24 +140,34 @@ A production-ready Notes Management REST API built with **FastAPI**, **PostgreSQ
 ## 📂 Project Structure
 
 ```text
-NoteVault_api/
+NoteVault_API/
 │
-├── tests/                  # Automated API tests
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # GitHub Actions CI pipeline
 │
-├── auth.py                 # JWT authentication & authorization
-├── config.py               # Environment variable configuration
-├── database.py             # Database connection & session management
-├── database_models.py      # SQLAlchemy ORM models
-├── main.py                 # FastAPI application & API endpoints
-├── pydantic_models.py      # Request/Response schemas
+├── tests/                         # Pytest test suite
+│   ├── conftest.py
+│   ├── test_auth.py
+│   ├── test_notes.py
+│   ├── test_admin.py
+│   └── ...
 │
-├── Dockerfile              # Docker image configuration
-├── docker-compose.yml      # Multi-container setup
-├── requirements.txt        # Python dependencies
-├── .env.example            # Environment variable template
-├── .gitignore
-├── LICENSE
-└── README.md
+├── auth.py                        # JWT authentication & password hashing
+├── database.py                    # Database connection & SQLAlchemy session
+├── database_models.py             # SQLAlchemy ORM models
+├── pydantic_models.py             # Request/Response schemas
+├── main.py                        # FastAPI application & API routes
+│
+├── Dockerfile                     # Docker image configuration
+├── docker-compose.yml             # Multi-container setup (API + PostgreSQL)
+├── requirements.txt               # Python dependencies
+├── pytest.ini                     # Pytest configuration
+├── .env.example                   # Example environment variables
+├── .dockerignore                  # Docker ignore rules
+├── .gitignore                     # Git ignore rules
+│
+└── README.md                      # Project documentation
 ```
 
 ## 🔐 Authentication
@@ -133,14 +178,28 @@ The API uses **OAuth2 Password Flow** with **JWT (JSON Web Tokens)** for secure 
 
 | Role | Permissions |
 |------|-------------|
-| **User** | Manage only their own notes |
-| **Admin** | Full access to users and notes |
+| **User** | Create, view, update, and delete only their own notes |
+| **Admin** | Full access to users, notes, and administrative endpoints |
 
-Include the generated JWT access token in the Authorization header:
+### Using Swagger Authorization
 
-```http
-Authorization: Bearer <your_access_token>
-```
+1. Open the **Swagger UI** (`/docs`).
+2. Click the **Authorize** button.
+3. Enter the following credentials:
+
+- **username** → Your **email address**
+- **password** → Your password
+
+Leave the following fields empty:
+
+- `client_id`
+- `client_secret`
+
+Click **Authorize**, then **Close**.
+
+All protected endpoints will automatically include the JWT access token in the `Authorization` header for the remainder of your session.
+
+> **Note:** Although Swagger labels the field as **username**, this API authenticates users using their **email address**.
 
 ## 📚 API Endpoints
 
@@ -148,7 +207,6 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | API health/root endpoint |
 | POST | `/register` | Register a new user |
 | POST | `/login` | Authenticate and receive a JWT access token |
 | GET | `/me` | Retrieve the currently authenticated user's profile |
@@ -182,17 +240,27 @@ Authorization: Bearer <your_access_token>
 
 ## 🔑 Authentication Flow
 
-1. Register a new user using `/register`.
-2. Log in via `/login` to receive a JWT access token.
-3. Include the token in subsequent requests:
+### Option 1 (Recommended) — Swagger UI
+
+1. Open the **Swagger UI** (`/docs`).
+2. Click **Authorize**.
+3. Log in using one of the demo accounts.
+4. Click **Authorize**, then **Close**.
+5. Test any protected endpoint directly from Swagger.
+
+---
+
+### Option 2 — Using the `/login` Endpoint
+
+1. Send a request to `/login` with your email and password.
+2. Copy the returned JWT access token.
+3. Include it in the `Authorization` header for protected endpoints:
 
 ```http
 Authorization: Bearer <your_access_token>
 ```
 
-4. Access protected endpoints such as `/notes` or `/me`.
-5. Admin-only endpoints require an account with the **admin** role.
-
+4. Access endpoints such as `/me`, `/notes`, and all other protected resources.
 
 ## 🚀 Running Locally
 
@@ -285,25 +353,27 @@ Generate a coverage report:
 pytest --cov
 ```
 
-### Current Test Status
+### Current Test Coverage
 
-- ✅ 19 automated API tests
-- ✅ 90% code coverage
-- ✅ Authentication and authorization tests
-- ✅ CRUD operation tests
-- ✅ Admin endpoint tests
+- ✅ 19 automated integration tests
+- ✅ ~90% code coverage
+- ✅ Authentication & Authorization
+- ✅ User CRUD operations
+- ✅ Admin endpoints
+- ✅ Role-Based Access Control
 
 
 ## ⚙️ Continuous Integration
 
-GitHub Actions automatically validates every push to the `main` branch by:
+Every push to the `main` branch automatically triggers a GitHub Actions workflow that:
 
-- Installing project dependencies
-- Starting a PostgreSQL service
-- Running the complete Pytest suite
-- Building the Docker image
+- Installs project dependencies
+- Starts a PostgreSQL service
+- Executes the complete Pytest suite
+- Generates the coverage report
+- Builds the Docker image
 
-This helps ensure new changes don't break existing functionality before deployment.
+This ensures new changes are continuously validated before deployment.
 
 
 ## ☁️ Deployment
@@ -312,7 +382,6 @@ The application is deployed on **Railway** and is publicly accessible.
 
 | Service | URL |
 |---------|-----|
-| 🌐 Live API | https://notevaultapi-production-918d.up.railway.app |
 | 📖 Swagger UI | https://notevaultapi-production-918d.up.railway.app/docs |
 
 ## 📄 License
