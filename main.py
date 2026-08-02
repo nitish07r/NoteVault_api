@@ -41,6 +41,7 @@ def wait_for_db(max_retries=10, delay=2):
             
 wait_for_db()
 
+# Create all database tables from the SQLAlchemy models if they do not exist.
 database_models.Base.metadata.create_all(bind=database.engine)
 
 
@@ -48,7 +49,31 @@ database_models.Base.metadata.create_all(bind=database.engine)
 # FastAPI App
 # ==================================================
 
-app = FastAPI()
+tags_metadata = [
+    {
+        "name": "Information",
+        "description": "General API information and health endpoint.",
+    },
+    {
+        "name": "Authentication",
+        "description": "User registration, login, and profile endpoints.",
+    },
+    {
+        "name": "Notes",
+        "description": "CRUD operations for authenticated users.",
+    },
+    {
+        "name": "Admin",
+        "description": "Administrative endpoints requiring the admin role.",
+    },
+]
+
+app = FastAPI(
+    title="NoteVault API",
+    description="A secure Notes Management REST API.",
+    version="1.0.0",
+    openapi_tags=tags_metadata,
+)
 
 
 # ==================================================
@@ -56,6 +81,8 @@ app = FastAPI()
 # ==================================================
 
 
+# Seed the database with initial users and notes when the app starts.
+# This runs only if an admin user is not already present.
 def init_db():
 
     db = database.SessionLocal()
@@ -156,12 +183,18 @@ def init_db():
 init_db()
 
 #root end point welcome message
-@app.get("/")
+@app.get(
+    "/",
+    tags=["Information"],
+    summary="API Information",
+    description="Returns basic information about the NoteVault API."
+)
 def root():
     return {
-        "message": "Welcome to NoteVault API,go to /docs for API documentation",
-        "version": "1.0.0",
-        "docs": "/docs",
+        "message": "Welcome to NoteVault API!",
+        "status": "API is running and healthy ✅.",
+        "documentation": "/docs",
+        "info": "Visit /docs to explore and test all available API endpoints using the interactive Swagger UI."
     }
 # ==================================================
 # Authentication Endpoints
@@ -172,6 +205,7 @@ def root():
 
 @app.post(
     "/register",
+    tags=["Authentication"],
     response_model=pydantic_models.UserResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -254,6 +288,7 @@ def register(
 # for oauth authorize button form
 @app.post(
     "/login",
+    tags=["Authentication"],
     response_model=pydantic_models.Token,
 )
 def login(
@@ -261,6 +296,7 @@ def login(
     db: Session = Depends(database.get_db),
 ):
 
+    # Authenticate using OAuth2 form data so Swagger UI can submit the login form.
     user = auth.authenticate_user(
         db,
         form_data.username,
@@ -295,11 +331,14 @@ def login(
 
 @app.get(
     "/me",
+    tags=["Authentication"],
     response_model=pydantic_models.UserResponse,
 )
 def get_current_logged_in_user(
     current_user: database_models.User = Depends(auth.get_current_user),
 ):
+    # Return the authenticated user's profile information.
+    # Requires a valid bearer token provided via Authorization header.
     return current_user
 
 
@@ -312,6 +351,7 @@ def get_current_logged_in_user(
 
 @app.post(
     "/notes",
+    tags=["Notes"],
     response_model=pydantic_models.NoteResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -322,6 +362,8 @@ def create_note(
     current_user: database_models.User = Depends(auth.get_current_user),
 ):
 
+    # Create a new note for the authenticated user.
+    # The user must be logged in to associate the note with their account.
     new_note = database_models.Note(
         name=note.name,
         description=note.description,
@@ -338,6 +380,7 @@ def create_note(
 #notes with search and priority filter, if both are provided then both filters will be applied, if only one is provided then only that filter will be applied, if none is provided then all notes of the user will be returned
 @app.get(
     "/notes",
+    tags=["Notes"],
     response_model=pydantic_models.PaginatedNotes,
 )
 def get_my_notes(
@@ -350,6 +393,8 @@ def get_my_notes(
     current_user: database_models.User = Depends(auth.get_current_user),
 ):
 
+    # Return notes for the authenticated user with optional search,
+    # priority filtering, sorting, and pagination.
     query = (
         db.query(database_models.Note)
         .filter(database_models.Note.user_id == current_user.id)
@@ -412,6 +457,7 @@ def get_my_notes(
 
 @app.get(
     "/notes/{note_id}",
+    tags=["Notes"],
     response_model=pydantic_models.NoteResponse,
 )
 def get_note_by_id(
@@ -420,6 +466,8 @@ def get_note_by_id(
     current_user: database_models.User = Depends(auth.get_current_user),
 ):
 
+    # Retrieve a single note by ID for the authenticated user.
+    # The note must belong to the requesting user.
     note = (
         db.query(database_models.Note)
         .filter(
@@ -440,6 +488,7 @@ def get_note_by_id(
 
 @app.patch(
     "/notes/{note_id}",
+    tags=["Notes"],
     response_model=pydantic_models.NoteResponse,
 )
 def update_note_by_id(
@@ -449,6 +498,7 @@ def update_note_by_id(
     current_user: database_models.User = Depends(auth.get_current_user),
 ):
 
+    # Update only fields provided by the user, leaving other values unchanged.
     note = (
         db.query(database_models.Note)
         .filter(
@@ -475,12 +525,14 @@ def update_note_by_id(
     return note
 
 
-@app.delete("/notes/{note_id}")
+@app.delete("/notes/{note_id}", tags=["Notes"])
 def delete_note_by_id(
     note_id: int,
     db: Session = Depends(database.get_db),
     current_user: database_models.User = Depends(auth.get_current_user),
 ):
+    # Delete a note owned by the authenticated user.
+    # Users cannot delete notes belonging to other users.
 
     note = (
         db.query(database_models.Note)
@@ -513,13 +565,14 @@ def delete_note_by_id(
 
 @app.get(
     "/admin/users",
+    tags=["Admin"],
     response_model=list[pydantic_models.UserResponse],
 )
 def get_all_users(
     db: Session = Depends(database.get_db),
     current_admin: database_models.User = Depends(auth.get_current_admin),
 ):
-
+    # Return all registered users; restricted to admin users only.
     users = db.query(database_models.User).all()
 
     return users
@@ -527,6 +580,7 @@ def get_all_users(
 
 @app.get(
     "/admin/users/{user_id}",
+    tags=["Admin"],
     response_model=pydantic_models.UserResponse,
 )
 def get_user_by_id(
@@ -534,7 +588,7 @@ def get_user_by_id(
     db: Session = Depends(database.get_db),
     current_admin: database_models.User = Depends(auth.get_current_admin),
 ):
-
+    # Retrieve a specific user by ID. Only admins may access this endpoint.
     user = (
         db.query(database_models.User)
         .filter(database_models.User.id == user_id)
@@ -552,6 +606,7 @@ def get_user_by_id(
 
 @app.get(
     "/admin/users/{user_id}/notes",
+    tags=["Admin"],
     response_model=list[pydantic_models.NoteResponse],
 )
 def get_notes_of_user(
@@ -559,7 +614,7 @@ def get_notes_of_user(
     db: Session = Depends(database.get_db),
     current_admin: database_models.User = Depends(auth.get_current_admin),
 ):
-
+    # Admin endpoint to view notes for a specific user.
     user = (
         db.query(database_models.User)
         .filter(database_models.User.id == user_id)
@@ -583,6 +638,7 @@ def get_notes_of_user(
 #with search and priority filter, if both are provided then both filters will be applied, if only one is provided then only that filter will be applied, if none is provided then all notes of the user will be returned
 @app.get(
     "/admin/notes",
+    tags=["Admin"],
     response_model=pydantic_models.PaginatedNotes,
 )
 def get_all_notes(
@@ -596,6 +652,8 @@ def get_all_notes(
     
 ):
 
+    # Return all notes across all users for admins.
+    # Supports search, priority filtering, sorting, and pagination.
     query = db.query(database_models.Note)
 
     if search:
@@ -653,13 +711,13 @@ def get_all_notes(
     }
 
 
-@app.delete("/admin/notes/{note_id}")
+@app.delete("/admin/notes/{note_id}", tags=["Admin"])
 def delete_any_note(
     note_id: int,
     db: Session = Depends(database.get_db),
     current_admin: database_models.User = Depends(auth.get_current_admin),
 ):
-
+    # Admin may delete any note by ID, regardless of ownership.
     note = (
         db.query(database_models.Note)
         .filter(database_models.Note.id == note_id)
@@ -685,13 +743,14 @@ def delete_any_note(
     "/admin/create-admin",
     response_model=pydantic_models.UserResponse,
     status_code=status.HTTP_201_CREATED,
+    tags=["Admin"]
 )
 def create_admin(
     admin_data: pydantic_models.AdminCreate,
     db: Session = Depends(database.get_db),
     current_admin: database_models.User = Depends(auth.get_current_admin),
 ):
-
+    # Create a new admin user. Only an existing admin can perform this action.
     existing_email = (
         db.query(database_models.User)
         .filter(database_models.User.email == admin_data.email)

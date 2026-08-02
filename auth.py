@@ -37,6 +37,8 @@ pwd_context = CryptContext(
 # OAuth2 Configuration
 # ==================================================
 
+# This dependency reads the Authorization header with a bearer token
+# and makes it available to endpoints that require authentication.
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="login"
 )
@@ -69,6 +71,8 @@ def create_access_token(
     expires_delta: Optional[timedelta] = None,
 ) -> str:
 
+    # Generate a signed JWT token for the authenticated user.
+    # The token payload should include a subject claim (sub).
     to_encode = data.copy()
 
     if expires_delta:
@@ -106,6 +110,8 @@ def get_user_by_email(
     )
 
 
+# Authenticate the user credentials against the database.
+# Returns the User record when email and password match, otherwise None.
 def authenticate_user(
     db: Session,
     email: str,
@@ -135,6 +141,8 @@ def get_current_user(
     db: Session = Depends(database.get_db),
 ) -> database_models.User:
 
+    # Decode the JWT token and load the current user from the database.
+    # If any validation step fails, raise an unauthorized error.
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
