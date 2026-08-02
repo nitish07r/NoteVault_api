@@ -70,9 +70,59 @@ tags_metadata = [
 
 app = FastAPI(
     title="NoteVault API",
-    description="A secure Notes Management REST API.",
     version="1.0.0",
     openapi_tags=tags_metadata,
+    contact={
+        "name": "Explore the Project on GitHub",
+        "url": "https://github.com/nitish07r/NoteVault_api",
+    },
+    description="""
+A secure Notes Management REST API built with **FastAPI**, **PostgreSQL**, and **SQLAlchemy**, featuring **JWT Authentication**, **Role-Based Access Control (RBAC)**, search, filtering, sorting, pagination, and full CRUD operations.
+
+---
+
+## ⬇️ Scroll Down to Test the API Endpoints
+
+The **Authorize** button and all interactive **API endpoints** are located **below this introduction**. Use one of the demo accounts above to authenticate and start testing.
+
+---
+## 🚀 Quick Demo
+
+Use one of the following demo accounts to explore the API directly from this page.
+
+### 👤 Admin Account
+**Email:** `admin@gmail.com`  
+**Password:** `Admin@123`
+
+### 👤 User Account
+**Email:** `nitish@gmail.com`  
+**Password:** `Nitish@123`
+
+---
+
+## 🔐 Authentication
+
+After reading this section, **scroll down** to the **Authorize** button below.
+
+1. Click **Authorize** (**OAuth2 Password Flow**).
+2. Enter the credentials for one of the demo accounts above.
+3. Enter the account **email** in the **username** field.
+4. Leave **client_id**, **client_secret**, and **scope** empty.
+5. Click **Authorize**.
+6. Close the dialog and start exploring the protected API endpoints.
+
+> **Note:** Swagger labels the field as **username**, but this API authenticates users using their **email address**.
+
+---
+
+## 📘 Documentation
+
+For project architecture, setup instructions, Docker configuration, GitHub Actions CI workflow, testing details, and implementation notes, explore the GitHub repository using the **"Explore the Project on GitHub"** link below.
+
+---
+
+This is a **public demonstration instance** containing sample data for evaluation purposes. Feel free to explore the API using the demo accounts. Data may be modified or reset periodically.
+"""
 )
 
 
