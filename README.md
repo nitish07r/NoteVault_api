@@ -1,6 +1,6 @@
 # 📝 NoteVault
 
-A production-ready Notes Management REST API built with **FastAPI**, **PostgreSQL**, and **SQLAlchemy**, featuring **JWT Authentication**, **Role-Based Access Control (RBAC)**, **Docker**, **GitHub Actions CI**, and **Railway Deployment**.
+A secure Notes Management REST API built with FastAPI and PostgreSQL, featuring JWT authentication, role-based access control (RBAC), note management, search and filtering, automated testing (19 Pytest tests with ~90% coverage), Docker containerization, GitHub Actions CI, and Railway cloud deployment.
 
 ---
 
@@ -26,6 +26,10 @@ https://notevaultapi-production-918d.up.railway.app/docs
 | **Email** | `nitish@gmail.com` |
 | **Password** | `Nitish@123` |
 
+> **Note**
+>
+> This is a **public demonstration instance** intended for evaluation. Feel free to explore the API using the demo accounts. The database contains only sample data, so any changes made by users (such as creating, updating, or deleting notes) may be visible to others.
+
 ### ⚡ Quick Start
 
 1. Open the **Swagger UI**.
@@ -46,7 +50,7 @@ https://notevaultapi-production-918d.up.railway.app/docs
 - 🔐 JWT Authentication & Authorization
 - 👥 Role-Based Access Control (Admin & User)
 - 📝 Complete CRUD Operations for Notes
-- 🔍 Search and Filtering Support
+- 🔍 Search, Filtering & Pagination Support
 - ✅ Request Validation with Pydantic
 - 🗄️ PostgreSQL + SQLAlchemy ORM
 - 🐳 Docker & Docker Compose Support
@@ -184,20 +188,14 @@ The API uses **OAuth2 Password Flow** with **JWT (JSON Web Tokens)** for secure 
 ### Using Swagger Authorization
 
 1. Open the **Swagger UI** (`/docs`).
-2. Click the **Authorize** button.
-3. Enter the following credentials:
+2. Click **Authorize**.
+3. Enter:
+   - **username** → Your **email address**
+   - **password** → Your password
+4. Leave **client_id** and **client_secret** empty.
+5. Click **Authorize**.
 
-- **username** → Your **email address**
-- **password** → Your password
-
-Leave the following fields empty:
-
-- `client_id`
-- `client_secret`
-
-Click **Authorize**, then **Close**.
-
-All protected endpoints will automatically include the JWT access token in the `Authorization` header for the remainder of your session.
+Swagger will automatically include the JWT access token in the `Authorization` header for all protected endpoints during your session.
 
 > **Note:** Although Swagger labels the field as **username**, this API authenticates users using their **email address**.
 
@@ -237,30 +235,6 @@ All protected endpoints will automatically include the JWT access token in the `
 | POST | `/admin/create-admin` | Create a new administrator |
 
 > **Note:** All `/notes` and `/admin` endpoints require a valid JWT access token in the `Authorization: Bearer <token>` header.
-
-## 🔑 Authentication Flow
-
-### Option 1 (Recommended) — Swagger UI
-
-1. Open the **Swagger UI** (`/docs`).
-2. Click **Authorize**.
-3. Log in using one of the demo accounts.
-4. Click **Authorize**, then **Close**.
-5. Test any protected endpoint directly from Swagger.
-
----
-
-### Option 2 — Using the `/login` Endpoint
-
-1. Send a request to `/login` with your email and password.
-2. Copy the returned JWT access token.
-3. Include it in the `Authorization` header for protected endpoints:
-
-```http
-Authorization: Bearer <your_access_token>
-```
-
-4. Access endpoints such as `/me`, `/notes`, and all other protected resources.
 
 ## 🚀 Running Locally
 
@@ -311,13 +285,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 uvicorn main:app --reload
 ```
 
-Visit:
+Open the interactive Swagger UI:
 
 ```
 http://127.0.0.1:8000/docs
 ```
-
-for the interactive Swagger UI.
 
 ## 🐳 Running with Docker
 
@@ -365,24 +337,26 @@ pytest --cov
 
 ## ⚙️ Continuous Integration
 
-Every push to the `main` branch automatically triggers a GitHub Actions workflow that:
+This project uses **GitHub Actions** to automatically validate every push and pull request to the `main` branch.
 
-- Installs project dependencies
-- Starts a PostgreSQL service
-- Executes the complete Pytest suite
-- Generates the coverage report
-- Builds the Docker image
+The CI pipeline:
 
-This ensures new changes are continuously validated before deployment.
+- 📦 Installs project dependencies
+- 🐘 Starts a PostgreSQL service
+- 🧪 Executes **19 automated Pytest tests**
+- 📊 Generates a **~90% code coverage** report
+- 🐳 Builds the Docker image to verify successful containerization
+
+This automated workflow helps ensure that every code change is tested, validated, and ready for deployment.
 
 
-## ☁️ Deployment
+## ☁️ Live Deployment
 
-The application is deployed on **Railway** and is publicly accessible.
+The API is publicly deployed on **Railway** and can be explored interactively using Swagger UI.
 
-| Service | URL |
-|---------|-----|
-| 📖 Swagger UI | https://notevaultapi-production-918d.up.railway.app/docs |
+📖 **Swagger UI**
+
+https://notevaultapi-production-918d.up.railway.app/docs
 
 ## 📄 License
 
