@@ -308,26 +308,12 @@ This helps ensure new changes don't break existing functionality before deployme
 
 ## ☁️ Deployment
 
-The application is deployed on **Railway**.
+The application is deployed on **Railway** and is publicly accessible.
 
-### Live API
-
-https://notevaultapi-production-918d.up.railway.app
-
-### Swagger Documentation
-
-https://notevaultapi-production-918d.up.railway.app/docs
-
-## 🚀 Future Enhancements
-
-- Email verification
-- Password reset via email
-- Refresh token support
-- Pagination for notes
-- Redis caching
-- Rate limiting
-- API versioning
-- Request logging and monitoring
+| Service | URL |
+|---------|-----|
+| 🌐 Live API | https://notevaultapi-production-918d.up.railway.app |
+| 📖 Swagger UI | https://notevaultapi-production-918d.up.railway.app/docs |
 
 ## 📄 License
 
