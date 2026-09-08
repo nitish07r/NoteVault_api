@@ -8,7 +8,7 @@ A secure Notes Management REST API built with FastAPI and PostgreSQL, featuring 
 
 ### 📖 Interactive Swagger UI
 
-https://notevaultapi-production-918d.up.railway.app/docs
+https://notevault-9ycppxgxc-nitishs-projects-5bb6086d.vercel.app/docs
 
 ### 🔑 Test Credentials
 
